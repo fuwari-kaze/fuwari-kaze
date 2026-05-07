@@ -1,0 +1,15 @@
+---
+import HeadTag from "@components/html/Head.astro";
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="jp">
+  <head>
+    <HeadTag title={title} description={description} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

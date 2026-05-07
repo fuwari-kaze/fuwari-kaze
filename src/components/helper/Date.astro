@@ -1,0 +1,29 @@
+---
+interface Props {
+  date: Date;
+  format?: "year-month" | "day";
+}
+
+const { date, format = "full" } = Astro.props;
+const formats: Record<string, Intl.DateTimeFormatOptions> = {
+  full: {
+    era: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  },
+  "year-month": {
+    era: "long",
+    year: "numeric",
+    month: "long",
+  },
+  day: {
+    day: "numeric",
+  },
+};
+const options = formats[format];
+---
+
+<time datetime={date.toISOString()}>
+  {date.toLocaleDateString("ja-JP-u-ca-japanese", options)}
+</time>

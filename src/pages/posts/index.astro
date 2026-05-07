@@ -1,0 +1,102 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "@layouts/Base.astro";
+import Footer from "@components/html/Footer.astro";
+import FormattedDate from "@components/helper/Date.astro";
+import { siteConfig } from "@consts";
+import Weather from "@components/widget/Weather.astro";
+
+type Post = (CollectionEntry<"cpub"> | CollectionEntry<"cpriv">) & {
+  isPublic: boolean;
+};
+
+const cpub = await getCollection("cpub", ({ data }) => !data.draft);
+const cpriv = await getCollection("cpriv", ({ data }) => !data.draft);
+const authors = await getCollection("author");
+const authorMap = new Map(authors.map((a) => [a.data.slug, a.data.name]));
+
+const posts: Post[] = [
+  ...cpub.map((p) => ({ ...p, isPublic: true })),
+  ...cpriv.map((p) => ({
+    ...p,
+    isPublic: false,
+  })),
+].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const groupedPosts = posts.reduce<Record<string, Post[]>>((acc, post) => {
+  const pubDate = post.data.pubDate;
+  const key = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+    era: "long",
+    year: "numeric",
+    month: "long",
+  }).format(pubDate);
+
+  if (!acc[key]) {
+    acc[key] = [];
+  }
+  acc[key].push(post);
+  return acc;
+}, {});
+---
+
+<BaseLayout
+  title={`Archive - ${siteConfig.title}`}
+  description={siteConfig.description}
+>
+  <main class="items-start gap-12 py-20">
+    {
+      Object.entries(groupedPosts).map(([month, posts]) => (
+        <div class="month-group flex gap-8">
+          <div class="month-header sticky top-12 min-w-40 shrink-0 text-2xl font-bold tracking-wide opacity-50 2xl:text-3xl">
+            {month}
+          </div>
+          <ul class="post-list m-0 grow">
+            {posts.map((post) => (
+              <li class="post-item group mb-6 flex gap-8 align-baseline transition-transform duration-200 hover:translate-x-1">
+                <div class="post-date text-subtle w-12 shrink-0 text-center">
+                  <FormattedDate date={post.data.pubDate} format="day" />
+                </div>
+                <div class="post-title grow">
+                  <div class="text-lg 2xl:text-xl">
+                    {post.isPublic ? (
+                      <a
+                        href={`/posts/public/${post.id}`}
+                        class="group-hover:text-primary transition-colors duration-200"
+                      >
+                        {post.data.title}
+                      </a>
+                    ) : (
+                      <a
+                        href={`/posts/private/${post.id}`}
+                        class="locked-link text-locked-post transition-colors duration-200 group-hover:text-zinc-400"
+                      >
+                        <span class="icon">🔒</span> This post is locked.
+                      </a>
+                    )}
+                  </div>
+                  {post.isPublic && post.data.author && (
+                    <div class="text-subtle mt-1 text-sm 2xl:text-base">
+                      By{" "}
+                      <a
+                        href={`/authors/${post.data.author}`}
+                        class="hover:text-primary transition-colors"
+                      >
+                        {authorMap.get(post.data.author)}
+                      </a>
+                    </div>
+                  )}
+                  <div class="text-subtle mt-1 text-base 2xl:text-lg">
+                    {post.isPublic
+                      ? post.data.description
+                      : "This post is locked."}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </main>
+  <Footer />
+  <Weather size="big" />
+</BaseLayout>

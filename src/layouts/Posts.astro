@@ -1,0 +1,71 @@
+---
+import { Image } from "astro:assets";
+import { getCollection, type CollectionEntry } from "astro:content";
+import { siteConfig } from "@consts";
+import BaseLayout from "@layouts/Base.astro";
+import Footer from "@components/html/Footer.astro";
+import FormattedDate from "@components/helper/Date.astro";
+import Weather from "@components/widget/Weather.astro";
+
+type Props = CollectionEntry<"cpub">["data"];
+
+const { title, description, pubDate, updDate, banner, author } = Astro.props;
+const authors = await getCollection("author");
+const authorEntry = authors.find((a) => a.data.slug === author);
+const authorData = authorEntry
+  ? { ...authorEntry.data, url: `/authors/${authorEntry.data.slug}` }
+  : {
+      name: siteConfig.title,
+      description: siteConfig.description,
+      url: "/posts",
+    };
+---
+
+<BaseLayout title={title} description={description}>
+  <main>
+    <article class="prose prose-custom">
+      <div class="hero-image mb-12">
+        {
+          banner && (
+            <Image
+              width={1280}
+              height={720}
+              src={banner}
+              alt={description || title}
+              class="h-auto w-full rounded-2xl object-cover shadow-2xl"
+            />
+          )
+        }
+      </div>
+      <div class="title mb-12 text-center">
+        <div class="date text-subtle mb-4 flex flex-col items-center gap-1">
+          <FormattedDate date={pubDate} />
+          {
+            updDate && (
+              <div class="last-updated-on">
+                最終更新 <FormattedDate date={updDate} />
+              </div>
+            )
+          }
+        </div>
+        <h1
+          class="mb-8 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
+        >
+          {title}
+        </h1>
+        <div class="author mb-8 flex flex-col items-center gap-1">
+          <a
+            href={authorData.url}
+            class="text-primary text-lg font-medium hover:underline"
+          >
+            {authorData.name}
+          </a>
+        </div>
+        <hr />
+      </div>
+      <slot />
+    </article>
+  </main>
+  <Footer />
+  <Weather size="small" />
+</BaseLayout>

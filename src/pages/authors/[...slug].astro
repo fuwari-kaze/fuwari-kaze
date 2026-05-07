@@ -1,0 +1,94 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@layouts/Base.astro";
+import Footer from "@components/html/Footer.astro";
+import FormattedDate from "@components/helper/Date.astro";
+import { siteConfig } from "@consts";
+import Weather from "@components/widget/Weather.astro";
+
+export async function getStaticPaths() {
+  const authors = await getCollection("author");
+  const posts = await getCollection("cpub", ({ data }) => !data.draft);
+
+  return authors
+    .map((author) => {
+      const authorPosts = posts.filter(
+        (p) => p.data.author === author.data.slug,
+      );
+      if (authorPosts.length === 0) return null;
+      return {
+        params: { slug: author.data.slug },
+        props: { author, posts: authorPosts },
+      };
+    })
+    .filter(Boolean);
+}
+
+const { author, posts } = Astro.props;
+
+const groupedPosts = posts.reduce<Record<string, any[]>>((acc, post) => {
+  const pubDate = post.data.pubDate;
+  const key = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+    era: "long",
+    year: "numeric",
+    month: "long",
+  }).format(pubDate);
+
+  if (!acc[key]) {
+    acc[key] = [];
+  }
+  acc[key].push(post);
+  return acc;
+}, {});
+---
+
+<BaseLayout
+  title={`${author.data.name} - ${siteConfig.title}`}
+  description={author.data.description}
+>
+  <main class="items-start gap-12 py-20">
+    <div class="author-info mb-12 text-left">
+      <h1 class="mb-4 text-4xl font-bold">{author.data.name}</h1>
+      <p class="text-subtle mb-2">{author.data.description}</p>
+      {
+        author.data.url && (
+          <a href={author.data.url} class="text-primary hover:underline">
+            {author.data.url}
+          </a>
+        )
+      }
+    </div>
+    {
+      Object.entries(groupedPosts).map(([month, posts]) => (
+        <div class="month-group mb-12 flex gap-8">
+          <div class="month-header sticky top-12 min-w-40 shrink-0 text-2xl font-bold tracking-wide opacity-50">
+            {month}
+          </div>
+          <ul class="post-list m-0 grow">
+            {posts
+              .sort(
+                (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+              )
+              .map((post) => (
+                <li class="post-item group mb-6 flex gap-8 align-baseline transition-transform duration-200 hover:translate-x-1">
+                  <div class="post-date text-subtle w-12 shrink-0 text-center">
+                    <FormattedDate date={post.data.pubDate} format="day" />
+                  </div>
+                  <div class="post-title grow text-lg 2xl:text-xl">
+                    <a
+                      href={`/posts/public/${post.id}`}
+                      class="group-hover:text-primary transition-colors duration-200"
+                    >
+                      {post.data.title}
+                    </a>
+                  </div>
+                </li>
+              ))}
+          </ul>
+        </div>
+      ))
+    }
+  </main>
+  <Footer />
+  <Weather size="big" />
+</BaseLayout>

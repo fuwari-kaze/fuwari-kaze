@@ -1,0 +1,18 @@
+---
+interface Props {
+  size: "small" | "big";
+}
+
+const { size } = Astro.props;
+---
+
+<div id="weather-widget" class="weather-widget" data-size={size}>
+  <p>天気を読み込み中...</p>
+</div>
+<script>
+  import { getWeatherData, updateWeatherWidget } from "@scripts/weather";
+
+  const widget = document.getElementById("weather-widget");
+  const weatherData = await getWeatherData();
+  updateWeatherWidget(widget, weatherData);
+</script>

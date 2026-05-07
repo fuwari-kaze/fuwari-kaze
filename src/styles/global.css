@@ -1,0 +1,157 @@
+@import "katex/dist/katex.min.css";
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --background-image-bear-grad: linear-gradient(to right, #000, #152331);
+  --color-primary: #dac;
+  --color-primary-foreground: #fff;
+  --color-inline-code-bg: #1f2428;
+  --color-inline-code-text: #e1e4e8;
+  --color-locked-post: #888;
+}
+
+@theme inline {
+  --font-serif: var(--font-shippori-mincho), sans-serif;
+  --font-mono: var(--font-m-plus-1-code), monospace;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-bear-grad mx-auto max-w-6xl bg-fixed px-6 font-serif text-base text-zinc-300 2xl:max-w-7xl 2xl:text-lg;
+  }
+
+  main {
+    @apply flex flex-col items-center gap-8 py-8;
+  }
+
+  h1 {
+    @apply text-primary font-bold tracking-tight;
+  }
+
+  hr {
+    @apply border-white/10;
+  }
+
+  ul {
+    @apply m-0 list-none p-0;
+  }
+
+  footer {
+    @apply text-center;
+  }
+
+  code {
+    @apply font-mono;
+  }
+
+  a {
+    @apply text-primary no-underline underline-offset-4 hover:underline;
+  }
+}
+
+@layer utilities {
+  .main-center {
+    @apply flex min-h-screen flex-col items-center justify-center;
+  }
+
+  .text-subtle {
+    @apply text-sm text-zinc-400 opacity-60 2xl:text-base;
+  }
+
+  .prose-custom {
+    @apply prose-invert max-w-none text-xl leading-relaxed 2xl:text-2xl;
+
+    & :where(th, td)[align="center"] {
+      @apply text-center;
+    }
+
+    & :where(th, td)[align="right"] {
+      @apply text-right;
+    }
+
+    & blockquote {
+      @apply not-italic;
+
+      p:first-of-type::before {
+        content: "";
+      }
+
+      p:last-of-type::after {
+        content: "";
+      }
+    }
+
+    & :not(pre) > code {
+      @apply bg-inline-code-bg text-inline-code-text rounded-md border border-white/10 px-1 py-1.5 text-sm font-normal;
+
+      &::before,
+      &::after {
+        content: "";
+      }
+    }
+
+    & img {
+      @apply rounded-lg border border-white/10 shadow-md;
+    }
+
+    & a {
+      @apply text-primary no-underline underline-offset-4 hover:underline;
+    }
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-2xl border border-white/10 bg-black/40 shadow-2xl backdrop-blur-md;
+  }
+
+  .input-primary {
+    @apply focus:ring-primary/50 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-gray-500 transition-all focus:ring-2 focus:outline-none;
+  }
+
+  .btn-primary {
+    @apply border-primary text-primary hover:bg-primary/10 w-full cursor-pointer rounded-xl border py-3 font-semibold shadow-lg transition-all active:scale-95;
+  }
+
+  .weather-widget {
+    @apply fixed right-8 bottom-8 z-50 rounded-2xl border border-white/20 bg-black/40 p-5 text-zinc-300 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:bg-black/60;
+  }
+
+  .weather-item {
+    @apply flex items-center gap-2;
+  }
+
+  .weather-item span {
+    @apply text-lg font-medium opacity-90;
+  }
+
+  .weather-header {
+    @apply flex items-center gap-4 text-xl font-bold;
+  }
+
+  .weather-header img {
+    @apply h-10 w-10 object-contain;
+  }
+
+  .weather-header span {
+    @apply text-primary align-middle;
+  }
+
+  .weather-content {
+    @apply mt-4 flex flex-col gap-2 text-base text-zinc-400;
+  }
+
+  .weather-content p {
+    @apply m-0 leading-relaxed;
+  }
+
+  .wind-arrow {
+    @apply mx-2 inline-block font-mono transition-transform duration-500;
+  }
+}

@@ -1,0 +1,28 @@
+---
+export const prerender = false;
+
+import { type CollectionEntry, getEntry, render } from "astro:content";
+import BlogPost from "@layouts/Posts.astro";
+
+const { slug } = Astro.params;
+if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  return Astro.redirect("/404");
+}
+
+const post = await getEntry("cpriv", slug);
+if (!post || post.data.draft) return Astro.redirect("/404");
+
+const unlocked = await Astro.session?.get("unlocked");
+
+if (!unlocked || unlocked !== post.id) {
+  return Astro.redirect(`/login/${post.id}`);
+}
+
+type Props = CollectionEntry<"cpriv">;
+
+const { Content } = await render(post);
+---
+
+<BlogPost {...post.data}>
+  <Content />
+</BlogPost>

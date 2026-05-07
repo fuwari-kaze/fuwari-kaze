@@ -1,0 +1,17 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*", "./worker-configuration.d.ts"],
+  "exclude": ["dist"],
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "types": ["./worker-configuration.d.ts", "node"],
+    "paths": {
+      "@assets/*": ["./src/content/assets/*"],
+      "@components/*": ["./src/components/*"],
+      "@layouts/*": ["./src/layouts/*"],
+      "@scripts/*": ["./src/scripts/*"],
+      "@ctypes/*": ["./src/types/*"],
+      "@consts": ["./src/consts"]
+    }
+  }
+}

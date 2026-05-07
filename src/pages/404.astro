@@ -1,0 +1,20 @@
+---
+import Layout from "@layouts/Posts.astro";
+import ErrorImg from "@assets/404.jpg";
+---
+
+<Layout
+  title="404: Not Found"
+  slug="404"
+  description="The page you're looking for could not be found."
+  draft={false}
+  pubDate={new Date()}
+  banner={ErrorImg}
+  protected={false}
+>
+  <p>Oops! It seems you've stumbled upon a page that doesn't exist.</p>
+  <p>
+    You can use the navigation above to find what you're looking for, or head
+    back to the <a href="/posts">homepage</a>.
+  </p>
+</Layout>

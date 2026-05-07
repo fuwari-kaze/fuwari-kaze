@@ -1,0 +1,35 @@
+---
+import BaseLayout from "@layouts/Base.astro";
+import { siteConfig } from "@consts";
+---
+
+<BaseLayout
+  title={siteConfig.title}
+  description={siteConfig.description}
+  showFooter={false}
+>
+  <main class="main-center gap-12">
+    <h1
+      class="text-primary text-5xl font-bold tracking-tighter md:text-7xl lg:text-8xl"
+    >
+      <span id="typed"></span>
+    </h1>
+    <a
+      href="/posts"
+      class="absolute bottom-12 text-lg opacity-60 transition-opacity duration-500 hover:opacity-100"
+      >&lt; Entry / 進入 &gt;</a
+    >
+  </main>
+  <script is:inline src="https://unpkg.com/typed.js/dist/typed.umd.js"></script>
+  <script is:inline>
+    function setupTyped() {
+      new Typed("#typed", {
+        strings: ["25時、ナイトコードで。"],
+        typeSpeed: 200,
+        cursorChar: "",
+        shouldBackspace: false,
+      });
+    }
+    setupTyped();
+  </script>
+</BaseLayout>

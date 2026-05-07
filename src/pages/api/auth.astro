@@ -1,0 +1,113 @@
+---
+export const prerender = false;
+
+import { getEntry } from "astro:content";
+import { env } from "cloudflare:workers";
+import { type verifyTypes } from "@ctypes/consts";
+
+if (Astro.request.method !== "POST") {
+  return Astro.redirect("/404");
+}
+
+const formData = await Astro.request.formData();
+const turnstileResponse = formData.get("cf-turnstile-response") as string;
+const slug = formData.get("slug") as string;
+const answer = formData.get("answer") as string;
+
+if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  return Astro.redirect("/404");
+}
+
+if (!answer || !turnstileResponse) {
+  return Astro.redirect(`/login/${slug}`);
+}
+
+const sessionId = await Astro.session?.sessionID;
+const turnstileSecret = await env.TURNSTILE_SECRET.get();
+const verifyResponse = await fetch(
+  "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      secret: turnstileSecret,
+      response: turnstileResponse,
+      idempotency_key: sessionId,
+    }),
+  },
+);
+const verifyResult: verifyTypes = await verifyResponse.json();
+
+if (!verifyResult.success) {
+  return Astro.redirect(`/login/${slug}?error=TURNSTILE_FAILED`);
+}
+
+if (/[^a-zA-Z0-9!@#$%^&*]/.test(answer)) {
+  return Astro.redirect(`/login/${slug}?error=INVALID_ANSWER`);
+}
+
+const kvData = await env.HASH_KV.get(slug);
+
+if (!kvData) {
+  return Astro.redirect(`/login/${slug}?error=WRONG_ANSWER`);
+}
+
+try {
+  const { passwordHash } = JSON.parse(kvData);
+  const [saltHex, storedHashHex] = passwordHash.split(":");
+  const encoder = new TextEncoder();
+  const passwordBuffer = encoder.encode(answer);
+  const saltBuffer = new Uint8Array(
+    saltHex.match(/.{1,2}/g)!.map((b: string) => parseInt(b, 16)),
+  );
+  const passwordKey = await crypto.subtle.importKey(
+    "raw",
+    passwordBuffer,
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"],
+  );
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: saltBuffer,
+      iterations: 100000,
+      hash: "SHA-512",
+    },
+    passwordKey,
+    512,
+  );
+  const calculatedHashBuffer = new Uint8Array(derivedBits);
+  const storedHashBuffer = new Uint8Array(
+    storedHashHex.match(/.{1,2}/g)!.map((b: string) => parseInt(b, 16)),
+  );
+
+  if (calculatedHashBuffer.length !== storedHashBuffer.length) {
+    return Astro.redirect(`/login/${slug}?error=WRONG_ANSWER`);
+  }
+
+  let result = 0;
+
+  for (let i = 0; i < calculatedHashBuffer.length; i++) {
+    result |= calculatedHashBuffer[i] ^ storedHashBuffer[i];
+  }
+
+  if (result !== 0) {
+    return Astro.redirect(`/login/${slug}?error=WRONG_ANSWER`);
+  }
+} catch (e) {
+  return Astro.redirect(`/login/${slug}?error=INTERNAL_ERROR`);
+}
+
+const post = await getEntry("cpriv", slug);
+
+if (!post || post.data.draft) {
+  return Astro.redirect("/404");
+}
+
+await Astro.session?.regenerate();
+await Astro.session?.set("unlocked", post.id);
+return Astro.redirect(`/posts/private/${post.id}`);
+---

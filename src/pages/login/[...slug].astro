@@ -1,0 +1,88 @@
+---
+export const prerender = false;
+
+import { type CollectionEntry, getEntry } from "astro:content";
+import markdownit from "markdown-it";
+import mdKatex from "@vscode/markdown-it-katex";
+import BaseLayout from "@layouts/Base.astro";
+import Footer from "@components/html/Footer.astro";
+import { siteConfig } from "@consts";
+
+const { slug } = Astro.params;
+const error = Astro.url.searchParams.get("error");
+if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  return Astro.redirect("/404");
+}
+
+const post = await getEntry("cpriv", slug);
+if (!post || post.data.draft) return Astro.redirect("/404");
+
+const errorMessages: Record<string, string> = {
+  TURNSTILE_FAILED:
+    "Cloudflare Turnstile verification failed. Please try again.",
+  INVALID_ANSWER: "The answer contains invalid characters.",
+  WRONG_ANSWER: "Incorrect answer. Please try again.",
+  INTERNAL_ERROR: "An internal server error occurred. Please try again later.",
+};
+
+const errorMessage = error
+  ? errorMessages[error] || errorMessages.INTERNAL_ERROR
+  : null;
+
+type Props = CollectionEntry<"cpriv">;
+
+const md = new markdownit().use(mdKatex);
+const questionRaw = post.data.question;
+const questionHtml = md.render(questionRaw);
+---
+
+<BaseLayout
+  title={`401: Unauthorized - ${siteConfig.title}`}
+  description={siteConfig.description}
+>
+  <main class="main-center p-6">
+    <div class="glass-card w-full max-w-md rounded-3xl p-10 text-center">
+      {
+        errorMessage && (
+          <div class="mb-6 rounded-xl border border-red-500/30 bg-red-900/20 p-3 text-base text-red-400">
+            {errorMessage}
+          </div>
+        )
+      }
+      <p class="text-subtle mb-6 text-base">
+        Please answer the following question to log in.
+      </p>
+      <div
+        class="prose prose-invert mb-8 max-w-none rounded-2xl border border-white/10 bg-white/5 p-6 font-medium text-zinc-200"
+        set:html={questionHtml}
+      />
+      <form method="POST" action="/api/auth" class="flex flex-col gap-5">
+        <input type="hidden" name="slug" value={slug} />
+        <input
+          type="password"
+          autocomplete="current-password"
+          name="answer"
+          placeholder="Password"
+          required
+          class="input-primary"
+        />
+        <div class="flex justify-center">
+          <div
+            class="cf-turnstile"
+            data-sitekey={siteConfig.cfTurnstileSiteKey}
+            data-theme="dark"
+            data-language="ja"
+          >
+          </div>
+        </div>
+        <button type="submit" class="btn-primary"> Log in </button>
+      </form>
+    </div>
+  </main>
+  <script
+    is:inline
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    async
+    defer></script>
+  <Footer />
+</BaseLayout>

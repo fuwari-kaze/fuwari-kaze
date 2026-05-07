@@ -1,0 +1,70 @@
+{
+  "name": "fuwari-kaze",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro build && astro preview",
+    "astro": "astro",
+    "generate-types": "wrangler types",
+    "deploy": "astro build && wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "prepare": "husky",
+    "hashpwd": "node scripts/hashpwd.js"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,mts,cts}": [
+      "eslint",
+      "prettier --write --ignore-unknown"
+    ],
+    "*.css": [
+      "stylelint",
+      "prettier --write --ignore-unknown"
+    ],
+    "!(*.{js,mjs,cjs,ts,mts,cts,css})": "prettier --write --ignore-unknown"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.9",
+    "@astrojs/cloudflare": "13.3.1",
+    "@astrojs/rss": "4.0.18",
+    "@astrojs/sitemap": "3.7.2",
+    "@expressive-code/plugin-collapsible-sections": "0.42.0",
+    "@expressive-code/plugin-line-numbers": "0.42.0",
+    "@tailwindcss/typography": "0.5.19",
+    "@tailwindcss/vite": "4.2.4",
+    "@vscode/markdown-it-katex": "1.1.2",
+    "argon2": "0.44.0",
+    "astro": "6.2.2",
+    "astro-expressive-code": "0.42.0",
+    "glob": "13.0.6",
+    "gray-matter": "4.0.3",
+    "katex": "0.16.45",
+    "markdown-it": "14.1.1",
+    "mongodb": "7.2.0",
+    "rehype-katex": "7.0.1",
+    "remark-math": "6.0.0",
+    "sharp": "0.34.5",
+    "tailwindcss": "4.2.4",
+    "typescript": "5.9.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/markdown-it": "14.1.2",
+    "@types/node": "24.12.2",
+    "eslint": "10.3.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.6.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.0.2",
+    "prettier": "3.8.3",
+    "prettier-plugin-astro": "0.14.1",
+    "prettier-plugin-tailwindcss": "0.8.0",
+    "stylelint": "17.11.0",
+    "stylelint-config-standard": "40.0.0",
+    "typescript-eslint": "8.59.2",
+    "wrangler": "4.88.0"
+  },
+  "overrides": {
+    "vite": "7"
+  }
+}
