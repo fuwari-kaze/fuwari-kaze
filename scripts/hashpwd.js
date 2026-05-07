@@ -30,9 +30,10 @@ async function uploadPasswords() {
       }
 
       const slug = data.slug;
-      const salt = crypto.randomBytes(16).toString("hex");
+      const saltBuffer = crypto.randomBytes(16);
+      const salt = saltBuffer.toString("hex");
       const hash = crypto
-        .pbkdf2Sync(passwordRaw, salt, 100000, 64, "sha512")
+        .pbkdf2Sync(passwordRaw, saltBuffer, 100000, 64, "sha512")
         .toString("hex");
       const hashedPassword = `${salt}:${hash}`;
 
