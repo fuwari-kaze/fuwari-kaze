@@ -34,7 +34,7 @@
     "@tailwindcss/vite": "4.3.0",
     "@vscode/markdown-it-katex": "1.1.2",
     "argon2": "0.44.0",
-    "astro": "6.3.1",
+    "astro": "6.3.3",
     "astro-expressive-code": "0.42.0",
     "glob": "13.0.6",
     "gray-matter": "4.0.3",
