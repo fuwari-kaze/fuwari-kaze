@@ -22,7 +22,7 @@
   "placement": {
     "mode": "smart",
   },
-  "compatibility_date": "2026-04-21",
+  "compatibility_date": "2026-05-26",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "name": "fuwari-kaze",
   "main": "@astrojs/cloudflare/entrypoints/server",
